@@ -1,0 +1,36 @@
+
+
+* Ideas
+
+** TODO Accept list of predicates
+
+Allow users to specify arbitrary predicates to run on buffers.
+
+** MAYBE Projectile integration
+
+=projectile-project-buffer-p= should probably work, so a keyword arg could specify the root directory (although, is that any different than the filename arg?)
+
+* Testing code
+
+#+BEGIN_SRC elisp
+  (frame-purpose-make-frame :modes '(matrix-client-mode)
+                            :title "Matrix"
+                            :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png")
+                            :sidebar 'right)
+
+  (frame-purpose-make-frame :modes '(emacs-lisp-mode)
+                            :title "elisp"
+                            :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png"))
+
+  (frame-purpose-make-frame :modes '(org-mode)
+                            :title "Org"
+                            :icon-type "/home/me/src/emacs/firefox-org-capture/data/org-mode.png")
+
+  (frame-purpose-make-frame :filenames "^/home/me/src/emacs/matrix-client"
+                            :title "matrix-client"
+                            :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png"))
+
+  (frame-purpose-make-frame :filenames (list (rx bos "/home/me/src/emacs/matrix-client"))
+                            :title "matrix-client"
+                            :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png"))
+#+END_SRC
