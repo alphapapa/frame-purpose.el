@@ -33,8 +33,9 @@
 ;; + `frame-purpose-make-mode-frame': Make a purpose-specific frame for buffers in major MODE.  MODE
 ;; defaults to the current buffer's major mode.
 
-;; + `frame-purpose-show-sidebar': Show list of purpose-specific buffers on SIDE of this frame.
-;; SIDE is a symbol, one of left, right, top, or bottom.
+;;  + `frame-purpose-show-sidebar': Show list of purpose-specific buffers on SIDE of this frame.
+;;  When a buffer in the list is selected, the last-used window switches to that buffer.  Makes a
+;;  new buffer if necessary.  SIDE is a symbol, one of left, right, top, or bottom.
 
 ;; For more fine-grained control, or for scripted use, the primary function is
 ;; `frame-purpose-make-frame'.  For example:
@@ -212,8 +213,9 @@ manually."
 
 (cl-defun frame-purpose-show-sidebar (&optional (side 'right))
   "Show list of purpose-specific buffers on SIDE of this frame.
-Makes a new buffer if necessary.  SIDE is a symbol, one of left,
-right, top, or bottom."
+When a buffer in the list is selected, the last-used window
+switches to that buffer.  Makes a new buffer if necessary.  SIDE
+is a symbol, one of left, right, top, or bottom."
   (interactive)
   (frame-purpose--update-purpose-buffer-list)
   (setq side (cl-case side

@@ -1,0 +1,68 @@
+
+* frame-purpose.el
+
+ =frame-purpose= makes it easy to open purpose-specific frames that only show certain buffers, e.g. by buffers' major mode, their filename or directory, etc, with custom frame/X-window titles, icons, and other frame parameters.
+
+ Note that this does not lock buffers to certain frames, and it does not prevent frames from showing any buffer.  It works by overriding the =buffer-list= function so that, within a purpose-specific frame, any code that uses =buffer-list= (e.g. =list-buffers=, =ibuffer=, Helm buffer-related commands) will only show buffers for that frame's purpose.  You could say that, within a purpose-specific frame, you would have to "go out of your way" to show a buffer that's not related to that frame's purpose.
+
+** Usage
+
+ First, enable =frame-purpose-mode=.  This overrides =buffer-list= with a function that acts appropriately on purpose-specific frames.  When the mode is disabled, =buffer-list= is returned to its original definition, and purpose-specific frames will no longer act specially.
+
+ There are some built-in interactive commands:
+
+ + =frame-purpose-make-directory-frame=: Make a purpose-specific frame for buffers associated with DIRECTORY.  DIRECTORY defaults to the current buffer's directory.
+ + =frame-purpose-make-mode-frame=: Make a purpose-specific frame for buffers in major MODE.  MODE defaults to the current buffer's major mode.
+ + =frame-purpose-show-sidebar=: Show list of purpose-specific buffers on SIDE of this frame.  When a buffer in the list is selected, the last-used window switches to that buffer.  Makes a new buffer if necessary.  SIDE is a symbol, one of left, right, top, or bottom.
+
+ For more fine-grained control, or for scripted use, the primary function is =frame-purpose-make-frame=.
+
+*** Examples
+
+ Make a frame to show only Org-mode buffers, with a custom frame (X window) title and icon:
+
+ #+BEGIN_SRC elisp
+   (frame-purpose-make-frame :modes 'org-mode
+                             :title "Org"
+                             :icon-type "~/src/emacs/org-mode/logo.png")
+ #+END_SRC
+
+ Make a frame to show only [[https://github.com/jgkamat/matrix-client-el][matrix-client]] buffers, with a custom frame (X window) title and icon, and showing a list of buffers in a sidebar window on the right side of the frame:
+
+ #+BEGIN_SRC elisp
+   (frame-purpose-make-frame :modes 'matrix-client-mode
+                             :title "Matrix"
+                             :icon-type (expand-file-name "~/src/emacs/matrix-client-el/logo.png")
+                             :sidebar 'right)
+ #+END_SRC
+
+Make a frame to show only Web-development-related buffers:
+
+ #+BEGIN_SRC elisp
+   (frame-purpose-make-frame :modes '(html-mode css-mode js-mode)
+                             :title "Web development")
+ #+END_SRC
+
+** Screenshots
+
+[[screenshot.png]]
+
+** Installation
+
+Install =dash.el=, put =frame-purpose.el= in your =load-path=, and =(require 'frame-purpose)=.
+
+The package may be submitted to MELPA in the future.
+
+** Notes and Prior Art
+
+There are a variety of powerful packages to help users manage buffers, like [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/nex3/perspective-el][perspective]], [[https://github.com/Bad-ptr/persp-mode.el][persp-mode]], [[https://github.com/tlh/workgroups.el][workgroups]], [[https://github.com/pashinin/workgroups2][workgroups2]], and others.  I found them a bit confusing and complicated for my needs.  I simply wanted to open frames to display certain sets of buffers, e.g. to have one frame for my Matrix/IRC chat-room buffers, one for my personal Org buffers, one for a certain Emacs package's files, etc.  Some people use dedicated Emacs processes to separate tasks, but I prefer to use a single Emacs process.  Also, while some of those packages provide handy persistence features, I don't want that complexity, and I don't necessarily want buffers or frames automatically opened when I start Emacs (and =desktop.el= provides that, when I need it).
+
+So when I discovered the =buffer-predicate= frame parameter, and realized that I could (apparently!) safely override =buffer-list= with a version that uses frames' =buffer-predicate=, this package naturally fell into place as a simple way to make purpose-specific frames.
+
+** Development
+
+Contributions are welcome!  Please report any problems or suggestions on the issue tracker.
+
+** License
+
+GPLv3
