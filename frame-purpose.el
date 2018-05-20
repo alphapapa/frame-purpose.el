@@ -3,7 +3,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/frame-purpose.el
 ;; Version: 1.0.0-pre
-;; Package-Requires: ((emacs "24.4") (dash "2.12"))
+;; Package-Requires: ((emacs "25.1") (dash "2.12"))
 ;; Keywords: buffers, convenience, frames
 
 ;;; Commentary:
@@ -71,6 +71,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'map)
 (require 'seq)
 
 (require 'dash)
@@ -105,38 +106,56 @@ MODE defaults to the current buffer's major mode."
 
 (cl-defun frame-purpose-make-frame (&rest args)
   "Make a new, purpose-specific frame.
+The new frame will only display buffers with the specified
+attributes.
 
-The new frame will only display buffers with the specified MODES
-or FILENAMES.  MODES is a list of major modes.  FILENAMES is a
-list of strings, which are compared as regular expressions with
-the `buffer-file-name'.  PARAMETERS are passed to `make-frame',
-which see."
+ARGS is a plist of keyword-value pairs, including:
+
+`:modes': One or a list of major modes, matched against buffers'
+major modes.
+
+`:filenames': One or a list of strings, matched as regular
+expressions against buffers' filenames.
+
+`:buffer-predicate': A function which takes a single argument, a
+buffer, and returns non-nil when the buffer matches the frame's
+purpose.  When set, `:modes' and `:filenames' must not also be
+set.
+
+Remaining keywords are transformed to non-keyword symbols and
+passed as frame parameters to `make-frame', which see."
   (unless frame-purpose-mode
     (user-error "Enable `frame-purpose-mode' first"))
   ;; Process args
   (let* ((parameters (cl-loop for (keyword value) on args by #'cddr
                               for symbol = (intern (substring (symbol-name keyword) 1))
                               collect (cons symbol value)))
-         (modes (when-let (modes (a-get parameters 'modes))
+         (modes (when-let (modes (map-elt parameters 'modes))
                   (cl-typecase modes
                     (symbol (list modes))
                     (list modes))))
-         (filenames (when-let (filenames (a-get parameters 'filenames))
+         (filenames (when-let (filenames (map-elt parameters 'filenames))
                       (cl-typecase filenames
                         (string (list filenames))
                         (list filenames)))))
-    (unless (or modes filenames)
-      (user-error "One of MODES or FILENAMES must be set"))
-    (push (cons 'buffer-predicate
-                (byte-compile `(lambda (buffer)
-                                 (with-current-buffer buffer
-                                   (or ,(when modes
-                                          `(member major-mode ',modes))
-                                       ,(when filenames
-                                          `(cl-loop for filename in ',filenames
-                                                    when (buffer-file-name)
-                                                    thereis (string-match filename (buffer-file-name)))))))))
-          parameters)
+    ;; Validate args
+    (unless (or modes filenames (map-elt parameters 'buffer-predicate))
+      (user-error "One of `:modes', `:filenames', or `:buffer-predicate' must be set"))
+    (when (and (map-elt parameters 'buffer-predicate)
+               (or modes filenames))
+      (user-error "When buffer-predicate is set, modes and filenames must be unspecified"))
+    ;; Make predicate
+    (map-put parameters 'buffer-predicate
+             (byte-compile (or (map-elt parameters 'buffer-predicate)
+                               `(lambda (buffer)
+                                  (with-current-buffer buffer
+                                    (or ,(when modes
+                                           `(member major-mode ',modes))
+                                        ,(when filenames
+                                           `(cl-loop for filename in ',filenames
+                                                     when (buffer-file-name)
+                                                     thereis (string-match filename (buffer-file-name))))))))))
+    ;; Make frame
     (with-selected-frame (make-frame parameters)
       (funcall frame-purpose--initial-buffer-fn)
       (when (frame-parameter nil 'sidebar)
