@@ -18,6 +18,11 @@ Allow users to specify arbitrary predicates to run on buffers.
                             :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png")
                             :sidebar 'right)
 
+  (frame-purpose-make-frame :modes '(matrix-client-mode)
+                            :title "Matrix"
+                            :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png")
+                            :sidebar 'above)
+
   (frame-purpose-make-frame :modes '(emacs-lisp-mode)
                             :title "elisp"
                             :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png"))

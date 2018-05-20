@@ -76,6 +76,7 @@
 (require 'seq)
 
 (require 'dash)
+(require 'dash-functional)
 
 ;;;; Customization
 
@@ -102,6 +103,30 @@ MODE defaults to the current buffer's major mode."
   (interactive (list major-mode))
   (frame-purpose-make-frame :modes mode
                             :title (symbol-name mode)))
+
+(cl-defun frame-purpose-show-sidebar (&optional (side 'right))
+  "Show list of purpose-specific buffers on SIDE of this frame.
+When a buffer in the list is selected, the last-used window
+switches to that buffer.  Makes a new buffer if necessary.  SIDE
+is a symbol, one of left, right, top, or bottom."
+  (interactive)
+  (unless (frame-parameter nil 'buffer-predicate)
+    (user-error "This frame has no specific purpose"))
+  (frame-purpose--update-sidebar)
+  (let* ((side (cl-case side
+                 ;; Invert the side for `split-window'
+                 ('left 'right)
+                 ('right 'left)
+                 ('above 'below)
+                 ('below nil)))
+         (size (pcase side
+                 ((or 'left 'right)
+                  (apply #'max (--map (+ 3 (length (buffer-name)))
+                                      (buffer-list))))
+                 ((or 'nil 'below)
+                  1))))
+    (split-window nil size side)
+    (switch-to-buffer (frame-purpose--sidebar-name))))
 
 ;;;; Functions
 
@@ -197,84 +222,95 @@ should restore correct behavior."
 
 (defun frame-purpose--enable ()
   "Store original `buffer-list' definition and override it.
-Called by `frame-purpose-mode'.  Do not call this function
-manually."
+Also add function to `buffer-list-update-hook'.  Called by
+`frame-purpose-mode'.  Do not call this function manually, or
+Emacs may start behaving very strangely...."
   (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
-  (advice-add #'buffer-list :override #'frame-purpose--buffer-list))
+  (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
+  (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
 
 (defun frame-purpose--disable ()
   "Restore original `buffer-list' definition.
-Called by `frame-purpose-mode'.  Do not call this function
-manually."
+Also remove function from `buffer-list-update-hook'.  Called by
+`frame-purpose-mode'."
   (advice-remove #'buffer-list #'frame-purpose--buffer-list)
-  (fmakunbound 'frame-purpose--buffer-list-original))
+  (fmakunbound 'frame-purpose--buffer-list-original)
+  (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
 
-;;;; Sidebar
+;;;;; Sidebar
 
-(cl-defun frame-purpose-show-sidebar (&optional (side 'right))
-  "Show list of purpose-specific buffers on SIDE of this frame.
-When a buffer in the list is selected, the last-used window
-switches to that buffer.  Makes a new buffer if necessary.  SIDE
-is a symbol, one of left, right, top, or bottom."
-  (interactive)
-  (frame-purpose--update-purpose-buffer-list)
-  (setq side (cl-case side
-               ;; Invert the side for `split-window'
-               ('left 'right)
-               ('right 'left)))
-  (split-window nil (apply #'max (--map (+ 3 (length (buffer-name)))
-                                        (buffer-list)))
-                side)
-  (switch-to-buffer (frame-purpose--list-buffer-name)))
+(defun frame-purpose--buffer-list-update-hook ()
+  "Update frame-purpose sidebars in all frames.
+To be added to `buffer-list-update-hook'."
+  (cl-loop for frame in (frame-list)
+           do (with-selected-frame frame
+                (when (frame-purpose--get-sidebar)
+                  (frame-purpose--update-sidebar)))))
 
-(defun frame-purpose--update-purpose-buffer-list ()
-  "Update purpose-specific buffer list for this frame."
-  (with-current-buffer (frame-purpose--get-list-buffer)
-    (let* ((inhibit-read-only t)
-           (sorted-buffers (sort (buffer-list)
-                                 (lambda (b1 b2)
-                                   (cl-labels ((name (buffer)
-                                                     (or (buffer-name buffer)
-                                                         (buffer-file-name buffer))))
-                                     (string< (name b1) (name b2))))))
-           (grouped-buffers (mapcar #'cdr (seq-group-by #'buffer-modified-p sorted-buffers))))
+(defun frame-purpose--get-sidebar (&optional create)
+  "Return the current frame's purpose-specific, buffer-listing sidebar buffer.
+When CREATE is non-nil, create the buffer if necessary."
+  (when-let ((buffer-name (frame-purpose--sidebar-name)))
+    (or (get-buffer buffer-name)
+        (when create
+          (with-current-buffer (get-buffer-create buffer-name)
+            (setq buffer-read-only t
+                  cursor-type nil
+                  mode-line-format nil)
+            (use-local-map (make-sparse-keymap))
+            (mapc (lambda (key)
+                    (local-set-key (kbd key) #'frame-purpose--sidebar-switch-to-buffer))
+                  '("<mouse-1>" "RET"))
+            (local-set-key (kbd "<down-mouse-1>") #'mouse-set-point)
+            (current-buffer))))))
+
+(defun frame-purpose--update-sidebar ()
+  "Update sidebar for this frame."
+  (with-current-buffer (frame-purpose--get-sidebar 'create)
+    (let* ((saved-point (point))
+           (inhibit-read-only t)
+           (grouped-buffers (->> (buffer-list)
+                                 (-sort (-on #'string< #'buffer-name))
+                                 (seq-group-by #'buffer-modified-p)
+                                 (mapcar #'cdr)))
+           (separator (pcase (frame-parameter nil 'sidebar)
+                        ((or 'left 'right) "\n")
+                        ((or 'above 'below) "  "))))
       (erase-buffer)
       (dolist (group grouped-buffers)
         (cl-loop for buffer in group
-                 for face = (if (buffer-modified-p buffer)
-                                'highlight
-                              'default)
-                 do (insert (propertize (buffer-name buffer)
-                                        'buffer buffer
-                                        'face face)
-                            "\n"))))))
+                 for string = (frame-purpose--format-buffer buffer)
+                 do (insert (propertize string
+                                        'buffer buffer)
+                            separator))))))
 
-(defun frame-purpose--get-list-buffer ()
-  "Return the current frame's purpose-specific, buffer-listing sidebar buffer.
-Creates the buffer if necessary."
-  (unless (frame-parameter nil 'buffer-predicate)
-    (user-error "This frame has no specific purpose"))
-  (let ((buffer-name (frame-purpose--list-buffer-name)))
-    (or (get-buffer buffer-name)
-        (with-current-buffer (get-buffer-create buffer-name)
-          (setq buffer-read-only t)
-          (use-local-map (make-sparse-keymap))
-          (mapc (lambda (key) (local-set-key (kbd key) #'frame-purpose--sidebar-switch-to-buffer))
-                '("<mouse-1>" "RET"))
-          (setq mode-line-format nil)
-          (current-buffer)))))
-
-(defun frame-purpose--list-buffer-name (&optional frame)
+(defun frame-purpose--sidebar-name (&optional frame)
   "Return name of purpose-specific buffer list buffer for FRAME (or current frame)."
   (when-let ((frame-title (frame-parameter frame 'title)))
     (format "*frame-purpose-buffers for frame: %s*" frame-title)))
+
+(defun frame-purpose--format-buffer (buffer)
+  "Return formatted string representing BUFFER.
+For insertion into sidebar."
+  (let ((faces))
+    (when (buffer-modified-p buffer)
+      (push '(:weight bold) faces))
+    (when (frame-purpose--buffer-visible-p buffer)
+      (push '(:inherit highlight) faces))
+    (propertize (buffer-name buffer)
+                'face faces)))
+
+(defun frame-purpose--buffer-visible-p (buffer)
+  "Return non-nil if BUFFER is visible in current frame."
+  (cl-loop for window in (window-list)
+           thereis (equal buffer (window-buffer window))))
 
 (defun frame-purpose--sidebar-switch-to-buffer ()
   "Switch previously used window to the buffer chosen in the sidebar.
 The previously used window is typically the one that was active
 when the user clicked in the sidebar."
   (interactive)
-  (when-let ((buffer (get-text-property (point-at-bol) 'buffer)))
+  (when-let ((buffer (get-text-property (point) 'buffer)))
     (select-window (get-mru-window nil nil 'not-selected))
     (switch-to-buffer buffer)))
 
