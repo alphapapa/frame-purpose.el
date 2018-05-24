@@ -1,5 +1,12 @@
 
 
+* Tasks
+
+** TODO Add other similar packages to readme
+
++  [ ] [[https://github.com/noctuid/framegroups.el][GitHub - noctuid/framegroups.el: Workspaces for emacs using frames]] ([[https://www.reddit.com/r/emacs/comments/8ad1ji/framegroupsel_workspaces_using_frames/][Reddit]])
++  [ ] [[https://github.com/john2x/nameframe][GitHub - john2x/nameframe: Manage Emacs frames by name]]
+
 * Ideas
 
 ** TODO Accept list of predicates
@@ -83,4 +90,8 @@ Maybe I could use it to help maintain the sidebar buffers...
   (frame-purpose-make-frame :filenames (list (rx bos "/home/me/src/emacs/matrix-client"))
                             :title "matrix-client"
                             :icon-type (expand-file-name "~/src/emacs/matrix-client-legacy-el/logo.png"))
+
+  (frame-purpose-make-frame :modes '("elfeed-" "w3m-" "eww-")
+                            :title "elfeed"
+                            :sidebar 'above)
 #+END_SRC
