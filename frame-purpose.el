@@ -88,6 +88,13 @@
   "Called to choose the buffer to show in new frames."
   :type 'function)
 
+(defcustom frame-purpose-sidebar-default-side 'right
+  "Default side of sidebar window."
+  :type '(choice (const right :value)
+                 (const left)
+                 (const above)
+                 (const below)))
+
 ;;;; Commands
 
 (defun frame-purpose-make-directory-frame (&optional directory)
@@ -253,6 +260,11 @@ When CREATE is non-nil, create the buffer if necessary."
   (when-let ((buffer-name (frame-purpose--sidebar-name)))
     (or (get-buffer buffer-name)
         (when create
+          (unless (frame-parameter nil 'sidebar)
+            ;; Set sidebar frame parameter if unset (e.g. if user calls `frame-purpose-make-frame'
+            ;; without a `:sidebar' arg, then calls `frame-purpose-show-sidebar'.  FIXME: There might
+            ;; be a nicer way to do this.
+            (set-frame-parameter nil 'sidebar frame-purpose-sidebar-default-side))
           (with-current-buffer (get-buffer-create buffer-name)
             (setq buffer-read-only t
                   cursor-type nil
