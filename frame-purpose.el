@@ -1,4 +1,4 @@
-;;; frame-purpose.el --- Purpose-specific frames that show only certain buffers
+;;; frame-purpose.el --- Purpose-specific frames that show only certain buffers    -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/frame-purpose.el
