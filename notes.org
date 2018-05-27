@@ -3,9 +3,22 @@
 * Tasks
 
 ** TODO Add other similar packages to readme
+** TODO Use =display-buffer-in-side-window=
+
+I did not know about this before.  It might be the right tool for the job...
+
+[[https://www.gnu.org/software/emacs/draft/manual/html_node/elisp/Side-Windows.html][GNU Emacs Lisp Reference Manual: Side Windows]]
+
 
 +  [ ] [[https://github.com/noctuid/framegroups.el][GitHub - noctuid/framegroups.el: Workspaces for emacs using frames]] ([[https://www.reddit.com/r/emacs/comments/8ad1ji/framegroupsel_workspaces_using_frames/][Reddit]])
 +  [ ] [[https://github.com/john2x/nameframe][GitHub - john2x/nameframe: Manage Emacs frames by name]]
+** TODO Make =(date)= select based on timestamps anywhere in entry
+
+e.g. see =org-agenda-get-timestamps=.
+
+It should probably accept an =:inactive= keyword arg to also select inactive timestamps.
+
+Probably, =(date)= should also check =deadline= and =scheduled= timestamps...
 
 * Ideas
 
@@ -16,6 +29,19 @@ Allow users to specify arbitrary predicates to run on buffers.
 ** MAYBE Projectile integration
 
 =projectile-project-buffer-p= should probably work, so a keyword arg could specify the root directory (although, is that any different than the filename arg?)
+
+** MAYBE Emacs 26 side windows
+:PROPERTIES:
+:ID:       14216d62-4cd5-4509-a857-a1ef62aa4ab5
+:END:
+
+e.g. as mentioned [[https://www.reddit.com/r/emacs/comments/7h5til/uelizaretskii_emacs_26_is_nearing_its_release_the/dqpdn9n/][here]].  Also from the changelog:
+
+#+BEGIN_QUOTE
+Support for side windows is now official. The display action function 'display-buffer-in-side-window' will display its buffer in a side window. Functions for toggling all side windows on a frame, changing and reversing the layout of side windows and returning the main (major non-side) window of a frame are provided. For details consult the section "(elisp) Side Windows" in the ELisp manual.
+
+Support for atomic windows - rectangular compositions of windows treated by 'split-window', 'delete-window' and 'delete-other-windows' like a single live window - is now official. For details consult the section "(elisp) Atomic Windows" in the ELisp manual.
+#+END_QUOTE
 
 * Other packages
 
