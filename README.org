@@ -39,7 +39,9 @@
 Make a frame to show only Web-development-related buffers:
 
  #+BEGIN_SRC elisp
-   (frame-purpose-make-frame :modes '(html-mode css-mode js-mode)
+   ;; `:modes' can be one or a list of items, each of which may be either a major mode symbol, or a
+   ;; string which is matched as a regexp against major mode names.
+   (frame-purpose-make-frame :modes '("html-" "css-" js-mode)
                              :title "Web development")
  #+END_SRC
 

@@ -183,7 +183,7 @@ passed as frame parameters to `make-frame', which see."
                                `(lambda (buffer)
                                   (with-current-buffer buffer
                                     (or ,(when modes
-                                           `(member major-mode ',modes))
+                                           `(frame-purpose--check-mode ',modes))
                                         ,(when filenames
                                            `(cl-loop for filename in ',filenames
                                                      when (buffer-file-name)
@@ -194,6 +194,16 @@ passed as frame parameters to `make-frame', which see."
       (when (frame-parameter nil 'sidebar)
         (frame-purpose-show-sidebar (frame-parameter nil 'sidebar)))
       (selected-frame))))
+
+(defsubst frame-purpose--check-mode (modes)
+  "Return non-nil if any of MODES match `major-mode'.
+MODES is a list of one or more symbols or strings.  Symbols are
+compared with `eq', and strings are regexps compared against the
+major mode's name with `string-match'."
+  (cl-loop for mode in modes
+           thereis (cl-typecase mode
+                     (symbol (eq mode major-mode))
+                     (string (string-match mode (symbol-name major-mode))))))
 
 (defun frame-purpose--buffer-list (&optional frame)
   "Return list of buffers.  When FRAME has a buffer-predicate, only return frames passing it."
