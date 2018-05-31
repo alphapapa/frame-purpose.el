@@ -5,6 +5,8 @@
 
  Note that this does not lock buffers to certain frames, and it does not prevent frames from showing any buffer.  It works by overriding the =buffer-list= function so that, within a purpose-specific frame, any code that uses =buffer-list= (e.g. =list-buffers=, =ibuffer=, Helm buffer-related commands) will only show buffers for that frame's purpose.  You could say that, within a purpose-specific frame, you would have to "go out of your way" to show a buffer that's not related to that frame's purpose.
 
+*Note:* You may also find the [[https://github.com/akirak/frame-workflow][frame-workflow]] package useful, which integrates with this one.
+
 ** Usage
 
  First, enable =frame-purpose-mode=.  This overrides =buffer-list= with a function that acts appropriately on purpose-specific frames.  When the mode is disabled, =buffer-list= is returned to its original definition, and purpose-specific frames will no longer act specially.
