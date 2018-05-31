@@ -53,9 +53,23 @@ Make a frame to show only Web-development-related buffers:
 
 ** Installation
 
-Install =dash.el=, put =frame-purpose.el= in your =load-path=, and =(require 'frame-purpose)=.
+Install =dash.el=, put =frame-purpose.el= in your =load-path=, and =(require 'frame-purpose)= in your init file.
 
 The package may be submitted to MELPA in the future.
+
+*** =use-package= and =general=
+
+If you use [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/noctuid/general.el#general-keyword][general]] (and you should), you could put this in your init file:
+
+#+BEGIN_SRC elisp
+(use-package frame-purpose
+  :general
+  (:prefix "M-SPC"
+    "Fd" #'frame-purpose-make-directory-frame
+    "Fm" #'frame-purpose-make-mode-frame))
+#+END_SRC
+
+Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-SPC F m= to open a new mode-specific frame.
 
 ** Notes and Prior Art
 
