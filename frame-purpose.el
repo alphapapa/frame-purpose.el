@@ -100,7 +100,7 @@
 (defun frame-purpose-make-directory-frame (&optional directory)
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
-  (interactive (list (file-name-directory (buffer-file-name))))
+  (interactive (list default-directory))
   (frame-purpose-make-frame :filenames directory
                             :title (file-name-nondirectory (directory-file-name directory))))
 
@@ -186,8 +186,8 @@ passed as frame parameters to `make-frame', which see."
                                            `(frame-purpose--check-mode ',modes))
                                         ,(when filenames
                                            `(cl-loop for filename in ',filenames
-                                                     when (buffer-file-name)
-                                                     thereis (string-match filename (buffer-file-name))))))))))
+                                                     when default-directory
+                                                     thereis (string-match filename default-directory)))))))))
     ;; Make frame
     (with-selected-frame (make-frame parameters)
       (funcall frame-purpose--initial-buffer-fn)
