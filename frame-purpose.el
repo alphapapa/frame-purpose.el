@@ -95,6 +95,25 @@
                  (const above)
                  (const below)))
 
+(defcustom frame-purpose-sidebar-mode-blacklist
+  '(
+    "elfeed-"
+    )
+  "List of major modes which should not be used with `frame-purpose' sidebars.
+For one reason or another, using a sidebar with buffers in these
+major modes may cause problems.  For example,
+`elfeed-search-update' uses temporary buffers to download and
+process feeds, and every time it opens or closes a temp buffer,
+`buffer-list' is called, which updates the list of buffers in the
+sidebar, and this seems to significantly slow down the feed
+updating process.  Until a fix or workaround can be found, it's
+best to simply avoid using a sidebar with these major modes.  So,
+if `frame-purpose-show-sidebar' is called from a buffer in one of
+these major modes (or a major mode matching one of these
+strings), an error will be signaled (it's not a perfect solution,
+but it should help)."
+  :type '(repeat (choice symbol string)))
+
 ;;;; Commands
 
 (defun frame-purpose-make-directory-frame (&optional directory)
@@ -119,6 +138,13 @@ is a symbol, one of left, right, top, or bottom."
   (interactive)
   (unless (frame-parameter nil 'buffer-predicate)
     (user-error "This frame has no specific purpose"))
+  (when (and (> (length frame-purpose-sidebar-mode-blacklist) 0)
+             (cl-loop for mode in frame-purpose-sidebar-mode-blacklist
+                      thereis (cl-typecase mode
+                                (symbol (eq mode major-mode))
+                                (string (string-match mode (symbol-name major-mode))))))
+    (user-error "The sidebar should generally not be used with buffers in %s.  See option `frame-purpose-sidebar-mode-blacklist'"
+                major-mode))
   (frame-purpose--update-sidebar)
   (let* ((side (cl-case side
                  ;; Invert the side for `split-window'

@@ -71,7 +71,13 @@ If you use [[https://github.com/jwiegley/use-package][use-package]] and [[https:
 
 Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-SPC F m= to open a new mode-specific frame.
 
-** Notes and Prior Art
+** Notes
+
+For one reason or another, using a sidebar with buffers in some major modes may cause problems.  For example, =elfeed-search-update= uses temporary buffers to download and process feeds, and every time it opens or closes a temp buffer, =buffer-list= is called, which updates the list of buffers in the sidebar, and this seems to significantly slow down the feed updating process.  Until a fix or workaround can be found, it's best to simply avoid using a sidebar with these major modes.  So, if =frame-purpose-show-sidebar= is called from a buffer in one of the major modes in the blacklist (or a major mode matching one of the strings in it), an error will be signaled (it's not a perfect solution, but it should help).
+
+Suggestions to workaround this issue are welcome.
+
+** Prior Art
 
 There are a variety of powerful packages to help users manage buffers, like [[https://github.com/wasamasa/eyebrowse][eyebrowse]], [[https://github.com/nex3/perspective-el][perspective]], [[https://github.com/Bad-ptr/persp-mode.el][persp-mode]], [[https://github.com/tlh/workgroups.el][workgroups]], [[https://github.com/pashinin/workgroups2][workgroups2]], and others.  I found them a bit confusing and complicated for my needs.  I simply wanted to open frames to display certain sets of buffers, e.g. to have one frame for my Matrix/IRC chat-room buffers, one for my personal Org buffers, one for a certain Emacs package's files, etc.  Some people use dedicated Emacs processes to separate tasks, but I prefer to use a single Emacs process.  Also, while some of those packages provide handy persistence features, I don't want that complexity, and I don't necessarily want buffers or frames automatically opened when I start Emacs (and =desktop.el= provides that, when I need it).
 
