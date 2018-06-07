@@ -116,6 +116,7 @@ but it should help)."
 
 ;;;; Commands
 
+;;;###autoload
 (defun frame-purpose-make-directory-frame (&optional directory)
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
@@ -123,6 +124,7 @@ DIRECTORY defaults to the current buffer's directory."
   (frame-purpose-make-frame :filenames directory
                             :title (file-name-nondirectory (directory-file-name directory))))
 
+;;;###autoload
 (defun frame-purpose-make-mode-frame (&optional mode)
   "Make a purpose-specific frame for buffers in major MODE.
 MODE defaults to the current buffer's major mode."
@@ -130,6 +132,7 @@ MODE defaults to the current buffer's major mode."
   (frame-purpose-make-frame :modes mode
                             :title (symbol-name mode)))
 
+;;;###autoload
 (cl-defun frame-purpose-show-sidebar (&optional (side 'right))
   "Show list of purpose-specific buffers on SIDE of this frame.
 When a buffer in the list is selected, the last-used window
@@ -334,6 +337,7 @@ when the user clicked in the sidebar."
 
 ;;;; Mode
 
+;;;###autoload
 (define-minor-mode frame-purpose-mode
   "Toggle `frame-purpose-mode', allowing the easy creation of purpose-specific frames.
 This works by overriding `buffer-list' in frames which have their
