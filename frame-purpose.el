@@ -1,4 +1,4 @@
-;;; frame-purpose.el --- Purpose-specific frames that show only certain buffers    -*- lexical-binding: t; -*-
+;;; frame-purpose.el --- Purpose-specific frames  -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/frame-purpose.el
@@ -74,6 +74,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'seq)
+(require 'subr-x)
 
 (require 'dash)
 (require 'dash-functional)
@@ -81,8 +82,9 @@
 ;;;; Customization
 
 (defgroup frame-purpose nil
-  "Group for `frame-purpose'."
-  :link '(url-link "http://github.com/alphapapa/frame-purpose.el"))
+  "Customization options for `frame-purpose-mode'."
+  :link '(url-link "http://github.com/alphapapa/frame-purpose.el")
+  :group 'convenience)
 
 (defcustom frame-purpose--initial-buffer-fn #'frame-purpose--initial-buffer
   "Called to choose the buffer to show in new frames."
@@ -166,6 +168,7 @@ is a symbol, one of left, right, top, or bottom."
 
 ;;;; Functions
 
+;;;###autoload
 (cl-defun frame-purpose-make-frame (&rest args)
   "Make a new, purpose-specific frame.
 The new frame will only display buffers with the specified
@@ -248,7 +251,8 @@ major mode's name with `string-match'."
       (buffer-list frame))))
 
 (defun frame-purpose--initial-buffer (&optional frame)
-  "Switch to the first valid buffer in this frame."
+  "Switch to the first valid buffer in FRAME.
+FRAME defaults to the current frame."
   (when-let ((buffer (car (buffer-list frame))))
     (switch-to-buffer buffer)))
 
@@ -344,6 +348,7 @@ This works by overriding `buffer-list' in frames which have their
 `buffer-predicate' parameter set.  If any unusual behavior is
 noticed in Emacs as a result of the override, disabling this mode
 should restore correct behavior."
+  :require 'frame-purpose
   :global t
   :init-value nil
   (if frame-purpose-mode
@@ -353,7 +358,7 @@ should restore correct behavior."
 (defun frame-purpose--enable ()
   "Store original `buffer-list' definition and override it.
 Also add function to `buffer-list-update-hook'.  Called by
-`frame-purpose-mode'.  Do not call this function manually, or
+command `frame-purpose-mode'.  Do not call this function manually, or
 Emacs may start behaving very strangely...."
   (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
   (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
@@ -362,7 +367,7 @@ Emacs may start behaving very strangely...."
 (defun frame-purpose--disable ()
   "Restore original `buffer-list' definition.
 Also remove function from `buffer-list-update-hook'.  Called by
-`frame-purpose-mode'."
+command `frame-purpose-mode'."
   (advice-remove #'buffer-list #'frame-purpose--buffer-list)
   (fmakunbound 'frame-purpose--buffer-list-original)
   (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
