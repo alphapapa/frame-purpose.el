@@ -223,36 +223,6 @@ major mode's name with `string-match'."
   (when-let ((buffer (car (buffer-list frame))))
     (switch-to-buffer buffer)))
 
-;;;; Mode
-
-(define-minor-mode frame-purpose-mode
-  "Toggle `frame-purpose-mode', allowing the easy creation of purpose-specific frames.
-This works by overriding `buffer-list' in frames which have their
-`buffer-predicate' parameter set.  If any unusual behavior is
-noticed in Emacs as a result of the override, disabling this mode
-should restore correct behavior."
-  :global t
-  :init-value nil
-  (if frame-purpose-mode
-      (frame-purpose--enable)
-    (frame-purpose--disable)))
-
-(defun frame-purpose--enable ()
-  "Store original `buffer-list' definition and override it.
-Also add function to `buffer-list-update-hook'.  Called by
-`frame-purpose-mode'.  Do not call this function manually, or
-Emacs may start behaving very strangely...."
-  (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
-  (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
-  (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
-
-(defun frame-purpose--disable ()
-  "Restore original `buffer-list' definition.
-Also remove function from `buffer-list-update-hook'.  Called by
-`frame-purpose-mode'."
-  (advice-remove #'buffer-list #'frame-purpose--buffer-list)
-  (fmakunbound 'frame-purpose--buffer-list-original)
-  (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
 
 ;;;;; Sidebar
 
@@ -335,6 +305,37 @@ when the user clicked in the sidebar."
   (when-let ((buffer (get-text-property (point) 'buffer)))
     (select-window (get-mru-window nil nil 'not-selected))
     (switch-to-buffer buffer)))
+
+;;;; Mode
+
+(define-minor-mode frame-purpose-mode
+  "Toggle `frame-purpose-mode', allowing the easy creation of purpose-specific frames.
+This works by overriding `buffer-list' in frames which have their
+`buffer-predicate' parameter set.  If any unusual behavior is
+noticed in Emacs as a result of the override, disabling this mode
+should restore correct behavior."
+  :global t
+  :init-value nil
+  (if frame-purpose-mode
+      (frame-purpose--enable)
+    (frame-purpose--disable)))
+
+(defun frame-purpose--enable ()
+  "Store original `buffer-list' definition and override it.
+Also add function to `buffer-list-update-hook'.  Called by
+`frame-purpose-mode'.  Do not call this function manually, or
+Emacs may start behaving very strangely...."
+  (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
+  (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
+  (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
+
+(defun frame-purpose--disable ()
+  "Restore original `buffer-list' definition.
+Also remove function from `buffer-list-update-hook'.  Called by
+`frame-purpose-mode'."
+  (advice-remove #'buffer-list #'frame-purpose--buffer-list)
+  (fmakunbound 'frame-purpose--buffer-list-original)
+  (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
 
 ;;;; Footer
 
