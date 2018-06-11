@@ -203,26 +203,30 @@ passed as frame parameters to `make-frame', which see."
          (filenames (when-let (filenames (map-elt parameters 'filenames))
                       (cl-typecase filenames
                         (string (list filenames))
-                        (list filenames)))))
+                        (list filenames))))
+         (pred (byte-compile (or (map-elt parameters 'buffer-predicate)
+                                 `(lambda (buffer)
+                                    (with-current-buffer buffer
+                                      (or ,(when modes
+                                             `(frame-purpose--check-mode ',modes))
+                                          ,(when filenames
+                                             `(cl-loop for filename in ',filenames
+                                                       when default-directory)))))))))
     ;; Validate args
     (unless (or modes filenames (map-elt parameters 'buffer-predicate))
       (user-error "One of `:modes', `:filenames', or `:buffer-predicate' must be set"))
     (when (and (map-elt parameters 'buffer-predicate)
                (or modes filenames))
       (user-error "When buffer-predicate is set, modes and filenames must be unspecified"))
-    ;; Make predicate
-    (map-put parameters 'buffer-predicate
-             (byte-compile (or (map-elt parameters 'buffer-predicate)
-                               `(lambda (buffer)
-                                  (with-current-buffer buffer
-                                    (or ,(when modes
-                                           `(frame-purpose--check-mode ',modes))
-                                        ,(when filenames
-                                           `(cl-loop for filename in ',filenames
-                                                     when default-directory
-                                                     thereis (string-match filename default-directory)))))))))
     ;; Make frame
     (with-selected-frame (make-frame parameters)
+      ;; Add predicate. NOTE: It would be easy to put the predicate in `parameters' before calling
+      ;; `make-frame', but that would mean that the predicate would be a closure whose lexical
+      ;; environment contained itself, which becomes a circular reference.  Sometimes that seems to
+      ;; cause a problem.  I don't know why it only seems to happen sometimes.  But let's just avoid
+      ;; that problem completely by not doing that.
+      (set-frame-parameter nil 'buffer-predicate
+                           pred)
       (funcall frame-purpose--initial-buffer-fn)
       (when (frame-parameter nil 'sidebar)
         (frame-purpose-show-sidebar (frame-parameter nil 'sidebar)))
