@@ -164,7 +164,8 @@ is a symbol, one of left, right, top, or bottom."
                  ((or 'nil 'below)
                   1))))
     (split-window nil size side)
-    (switch-to-buffer (frame-purpose--sidebar-name))))
+    (switch-to-buffer (frame-purpose--sidebar-name))
+    (set-window-dedicated-p (selected-window) t)))
 
 ;;;; Functions
 
