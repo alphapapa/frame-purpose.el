@@ -159,8 +159,10 @@ is a symbol, one of left, right, top, or bottom."
                  ('below nil)))
          (size (pcase side
                  ((or 'left 'right)
-                  (apply #'max (--map (+ 3 (length (buffer-name it)))
-                                      (buffer-list))))
+                  (apply #'max (or (--map (+ 3 (length (buffer-name it)))
+                                          (buffer-list))
+                                   ;; In case the sidebar is opened in a frame without matching buffers
+                                   (list 30))))
                  ((or 'nil 'below)
                   1))))
     (split-window nil size side)
