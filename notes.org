@@ -1,4 +1,4 @@
-
+#+PROPERTY: LOGGING nil
 
 * Tasks
 
@@ -25,6 +25,17 @@ Probably, =(date)= should also check =deadline= and =scheduled= timestamps...
 ** TODO Accept list of predicates
 
 Allow users to specify arbitrary predicates to run on buffers.
+
+** MAYBE Idempotency
+
+It would be nice to have an option like:
+
+#+BEGIN_SRC elisp
+  (frame-purpose-make-frame :only-one t
+                            :modes ...)
+#+END_SRC
+
+So that if that command were called more than once, it wouldn't open a second frame.
 
 ** MAYBE Projectile integration
 
