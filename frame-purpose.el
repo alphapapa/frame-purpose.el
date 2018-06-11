@@ -361,9 +361,13 @@ should restore correct behavior."
 Also add function to `buffer-list-update-hook'.  Called by
 command `frame-purpose-mode'.  Do not call this function manually, or
 Emacs may start behaving very strangely...."
-  (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
-  (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
-  (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
+  (unless (fboundp 'frame-purpose--buffer-list-original)
+    ;; Avoid calling this twice, or it will define frame-purpose--buffer-list-original as itself,
+    ;; causing infinite recursion whenever Emacs calls buffer-list, which tends to cause problems
+    ;; (no, of course I didn't learn this the hard way...).
+    (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
+    (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
+    (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook)))
 
 (defun frame-purpose--disable ()
   "Restore original `buffer-list' definition.
