@@ -123,7 +123,7 @@ but it should help)."
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
   (interactive (list default-directory))
-  (frame-purpose-make-frame :filenames directory
+  (frame-purpose-make-frame :filenames (regexp-quote (expand-file-name directory))
                             :title (file-name-nondirectory (directory-file-name directory))))
 
 ;;;###autoload
