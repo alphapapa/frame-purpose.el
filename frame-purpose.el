@@ -213,7 +213,8 @@ passed as frame parameters to `make-frame', which see."
                                              `(frame-purpose--check-mode ',modes))
                                           ,(when filenames
                                              `(cl-loop for filename in ',filenames
-                                                       when default-directory)))))))))
+                                                       when default-directory
+                                                       thereis (string-match filename default-directory))))))))))
     ;; Validate args
     (unless (or modes filenames (map-elt parameters 'buffer-predicate))
       (user-error "One of `:modes', `:filenames', or `:buffer-predicate' must be set"))
