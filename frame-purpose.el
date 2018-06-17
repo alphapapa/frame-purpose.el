@@ -122,7 +122,8 @@ but it should help)."
 (defun frame-purpose-make-directory-frame (&optional directory)
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
-  (interactive (list default-directory))
+  (interactive)
+  (setq directory (or directory default-directory))
   (frame-purpose-make-frame :filenames directory
                             :title (file-name-nondirectory (directory-file-name directory))))
 
@@ -130,7 +131,8 @@ DIRECTORY defaults to the current buffer's directory."
 (defun frame-purpose-make-mode-frame (&optional mode)
   "Make a purpose-specific frame for buffers in major MODE.
 MODE defaults to the current buffer's major mode."
-  (interactive (list major-mode))
+  (interactive)
+  (setq mode (or mode major-mode))
   (frame-purpose-make-frame :modes mode
                             :title (symbol-name mode)))
 
