@@ -315,7 +315,8 @@ When CREATE is non-nil, create the buffer if necessary."
                  for string = (frame-purpose--format-buffer buffer)
                  do (insert (propertize string
                                         'buffer buffer)
-                            separator))))))
+                            separator)))
+      (goto-char saved-point))))
 
 (defun frame-purpose--sidebar-name (&optional frame)
   "Return name of purpose-specific buffer list buffer for FRAME (or current frame)."
