@@ -119,18 +119,18 @@ but it should help)."
 ;;;; Commands
 
 ;;;###autoload
-(defun frame-purpose-make-directory-frame (&optional directory)
+(cl-defun frame-purpose-make-directory-frame (&optional (directory default-directory))
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
-  (interactive (list default-directory))
+  (interactive)
   (frame-purpose-make-frame :filenames (rx-to-string `(seq bos ,(expand-file-name directory)))
                             :title (file-name-nondirectory (directory-file-name directory))))
 
 ;;;###autoload
-(defun frame-purpose-make-mode-frame (&optional mode)
+(cl-defun frame-purpose-make-mode-frame (&optional (mode major-mode))
   "Make a purpose-specific frame for buffers in major MODE.
 MODE defaults to the current buffer's major mode."
-  (interactive (list major-mode))
+  (interactive)
   (frame-purpose-make-frame :modes mode
                             :title (symbol-name mode)))
 
