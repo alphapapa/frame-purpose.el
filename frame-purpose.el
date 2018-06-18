@@ -123,7 +123,7 @@ but it should help)."
   "Make a purpose-specific frame for buffers associated with DIRECTORY.
 DIRECTORY defaults to the current buffer's directory."
   (interactive (list default-directory))
-  (frame-purpose-make-frame :filenames directory
+  (frame-purpose-make-frame :filenames (rx-to-string `(seq bos ,(expand-file-name directory)))
                             :title (file-name-nondirectory (directory-file-name directory))))
 
 ;;;###autoload
@@ -182,8 +182,8 @@ ARGS is a plist of keyword-value pairs, including:
 `:modes': One or a list of major modes, matched against buffers'
 major modes.
 
-`:filenames': One or a list of strings, matched as regular
-expressions against buffers' filenames.
+`:filenames': One or a list of regular expressions matched
+ against buffers' filenames.
 
 `:buffer-predicate': A function which takes a single argument, a
 buffer, and returns non-nil when the buffer matches the frame's
