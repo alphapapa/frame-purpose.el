@@ -73,7 +73,6 @@
 
 (require 'cl-lib)
 (require 'map)
-(require 'seq)
 (require 'subr-x)
 
 (require 'dash)
@@ -304,7 +303,7 @@ When CREATE is non-nil, create the buffer if necessary."
            (inhibit-read-only t)
            (grouped-buffers (->> (buffer-list)
                                  (-sort (-on #'string< #'buffer-name))
-                                 (seq-group-by #'buffer-modified-p)
+                                 (-group-by #'buffer-modified-p)
                                  (mapcar #'cdr)))
            (separator (pcase (frame-parameter nil 'sidebar)
                         ((or 'left 'right) "\n")
