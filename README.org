@@ -1,5 +1,12 @@
+#+PROPERTY: LOGGING nil
+
+#+BEGIN_HTML
+<a href=https://alphapapa.github.io/dont-tread-on-emacs/><img src="images/dont-tread-on-emacs-150.png" align="right"></a>
+#+END_HTML
 
 * frame-purpose.el
+
+[[http://melpa.org/#/frame-purpose][file:http://melpa.org/packages/frame-purpose-badge.svg]]
 
  =frame-purpose= makes it easy to open purpose-specific frames that only show certain buffers, e.g. by buffers' major mode, their filename or directory, etc, with custom frame/X-window titles, icons, and other frame parameters.
 
@@ -49,13 +56,15 @@ Make a frame to show only Web-development-related buffers:
 
 ** Screenshots
 
-[[screenshot.png]]
+[[images/screenshot.png]]
 
 ** Installation
 
-Install =dash.el=, put =frame-purpose.el= in your =load-path=, and =(require 'frame-purpose)= in your init file.
+If you installed from MELPA, you're done!
 
-The package may be submitted to MELPA in the future.
+*** Manual
+
+Install =dash.el=, put =frame-purpose.el= in your =load-path=, and =(require 'frame-purpose)= in your init file.
 
 *** =use-package= and =general=
 
