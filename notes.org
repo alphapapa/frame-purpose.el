@@ -54,7 +54,13 @@ Support for side windows is now official. The display action function 'display-b
 Support for atomic windows - rectangular compositions of windows treated by 'split-window', 'delete-window' and 'delete-other-windows' like a single live window - is now official. For details consult the section "(elisp) Atomic Windows" in the ELisp manual.
 #+END_QUOTE
 
+** MAYBE =frame-tabs= package
+
+New in ELPA, might be worth using instead of implementing ourselves.
+
 * Other packages
+
+TODO means to add it to the readme.
 
 ** =window-purpose=
 
@@ -98,6 +104,10 @@ I'm not sure if this is helpful or confusing, haha:
 #+END_EXAMPLE
 
 Maybe I could use it to help maintain the sidebar buffers...
+
+** TODO [[https://github.com/bmag/emacs-purpose][GitHub - bmag/emacs-purpose: Manage Windows and Buffers According to Purposes]]
+
+** TODO [[https://github.com/akirak/frame-workflow][GitHub - akirak/frame-workflow: Frame-oriented workflow management for Emacs]]
 
 * Testing code
 
