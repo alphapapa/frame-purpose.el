@@ -370,6 +370,51 @@ when the user clicked in the sidebar."
     (select-window (get-mru-window nil nil 'not-selected))
     (switch-to-buffer buffer)))
 
+;;;;; Throttle
+
+(defun frame-purpose--throttle (func interval)
+  "Throttle FUNC: a closure, lambda, or symbol.
+
+If argument is a symbol then install the throttled function over
+the original function.  INTERVAL, a number of seconds or a
+duration string as used by `timer-duration', determines how much
+time must pass before FUNC will be allowed to run again."
+  (cl-typecase func
+    (symbol
+     (when (get func :frame-purpose-throttle-original-function)
+       (user-error "%s is already throttled" func))
+     (put func :frame-purpose-throttle-original-documentation (documentation func))
+     (put func 'function-documentation
+          (concat (documentation func) " (throttled)"))
+     (put func :frame-purpose-throttle-original-function (symbol-function func))
+     (fset func (frame-purpose--throttle-wrap (symbol-function func) interval))
+     func)
+    (function (frame-purpose--throttle-wrap func interval))))
+
+(defun frame-purpose--throttle-wrap (func interval)
+  "Return the throttled version of FUNC.
+INTERVAL, a number of seconds or a duration string as used by
+`timer-duration', determines how much time must pass before FUNC
+will be allowed to run again."
+  (let ((interval (cl-typecase interval
+                    ;; Convert interval to seconds
+                    (float interval)
+                    (integer interval)
+                    (string (timer-duration interval))
+                    (t (user-error "Invalid interval: %s" interval))))
+        last-run-time)
+    (lambda (&rest args)
+      (when (or (null last-run-time)
+                (>= (float-time (time-subtract (current-time) last-run-time))
+                    interval))
+        (setq last-run-time (current-time))
+        (apply func args)))))
+
+;; Throttle the update-sidebar function, because sometimes it can be very slow and make Emacs loop
+;; for a long time.  This is a hacky workaround, but it does help.
+
+(frame-purpose--throttle #'frame-purpose--update-sidebar 1)
+
 ;;;; Mode
 
 ;;;###autoload
