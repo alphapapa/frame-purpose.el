@@ -308,7 +308,8 @@ When CREATE is non-nil, create the buffer if necessary."
             ;; be a nicer way to do this.
             (set-frame-parameter nil 'sidebar frame-purpose-sidebar-default-side))
           (with-current-buffer (get-buffer-create buffer-name)
-            (setq buffer-read-only t
+            (setq buffer-undo-list t
+                  buffer-read-only t
                   cursor-type nil
                   mode-line-format nil)
             (use-local-map (make-sparse-keymap))
