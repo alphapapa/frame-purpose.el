@@ -201,6 +201,11 @@ argument, a list of buffers, and return the list sorted as
 desired.  By default, buffers are sorted by modified status and
 name.
 
+`:sidebar-buffers-fn': A function which takes no arguments and
+returns a list of buffers to be displayed in the sidebar.  If
+nil, `buffer-list' is used.  Using a custom function for this
+when possible may substantially improve performance.
+
 Remaining keywords are transformed to non-keyword symbols and
 passed as frame parameters to `make-frame', which see."
   (unless frame-purpose-mode
@@ -327,7 +332,8 @@ When CREATE is non-nil, create the buffer if necessary."
            (buffer-sort-fns (or (frame-parameter nil 'buffer-sort-fns)
                                 (list (-on #'string< #'buffer-name)
                                       (-on #'< #'buffer-modified-tick))))
-           (buffers (buffer-list))
+           (buffers (funcall (or (frame-parameter nil 'sidebar-buffers-fn)
+                                 #'buffer-list)))
            (buffers (dolist (fn buffer-sort-fns buffers)
                       (setq buffers (-sort fn buffers))))
            (separator (pcase (frame-parameter nil 'sidebar)
