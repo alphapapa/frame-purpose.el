@@ -172,7 +172,8 @@ is a symbol, one of left, right, top, or bottom."
     (split-window nil size side)
     (switch-to-buffer (frame-purpose--sidebar-name))
     (set-window-dedicated-p (selected-window) t)
-    (window-preserve-size nil horizontal t)))
+    (window-preserve-size nil horizontal t)
+    (goto-char (point-min))))
 
 ;;;; Functions
 

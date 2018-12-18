@@ -87,6 +87,7 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 *Fixed*
 +  ~frame-purpose-show-sidebar~: Use designated sidebar side.
 +  Preserve sidebar window size when frame is resized.
++  Put point at beginning of sidebar buffer.
 
 *** 1.0
 
