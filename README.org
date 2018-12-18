@@ -82,6 +82,10 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 ** Changelog
 
+*** 1.1-pre
+
+Nothing yet.
+
 *** 1.0
 
 First tagged version.
