@@ -206,6 +206,10 @@ returns a list of buffers to be displayed in the sidebar.  If
 nil, `buffer-list' is used.  Using a custom function for this
 when possible may substantially improve performance.
 
+`:sidebar-auto-update': Whether to automatically update the
+sidebar buffer whenever `buffer-list-update-hook' is called.  On
+by default, but may degrade Emacs performance.
+
 Remaining keywords are transformed to non-keyword symbols and
 passed as frame parameters to `make-frame', which see."
   (unless frame-purpose-mode
@@ -237,6 +241,9 @@ passed as frame parameters to `make-frame', which see."
     (when (and (map-elt parameters 'buffer-predicate)
                (or modes filenames))
       (user-error "When buffer-predicate is set, modes and filenames must be unspecified"))
+    (unless (member 'sidebar-auto-update (map-keys parameters))
+      ;; Enable sidebar-auto-update by default.
+      (map-put parameters 'sidebar-auto-update t))
     ;; Make frame
     (with-selected-frame (make-frame parameters)
       ;; Add predicate. NOTE: It would be easy to put the predicate in `parameters' before calling
@@ -295,10 +302,12 @@ FRAME defaults to the current frame."
 
 (defun frame-purpose--buffer-list-update-hook ()
   "Update frame-purpose sidebars in all frames.
-To be added to `buffer-list-update-hook'."
+If a frame's `sidebar-auto-update' parameter is nil, its sidebar
+is not updated.  To be added to `buffer-list-update-hook'."
   (cl-loop for frame in (frame-list)
            do (with-selected-frame frame
-                (when (frame-purpose--get-sidebar)
+                (when (and (frame-parameter nil 'sidebar-auto-update)
+                           (frame-purpose--get-sidebar))
                   (frame-purpose--update-sidebar)))))
 
 (defun frame-purpose--get-sidebar (&optional create)
