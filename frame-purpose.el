@@ -196,6 +196,11 @@ buffer, and returns non-nil when the buffer matches the frame's
 purpose.  When set, `:modes' and `:filenames' must not also be
 set.
 
+`:buffer-sort-fns': A list of sorting functions which take one
+argument, a list of buffers, and return the list sorted as
+desired.  By default, buffers are sorted by modified status and
+name.
+
 Remaining keywords are transformed to non-keyword symbols and
 passed as frame parameters to `make-frame', which see."
   (unless frame-purpose-mode
@@ -318,20 +323,20 @@ When CREATE is non-nil, create the buffer if necessary."
   (with-current-buffer (frame-purpose--get-sidebar 'create)
     (let* ((saved-point (point))
            (inhibit-read-only t)
-           (grouped-buffers (->> (buffer-list)
-                                 (-sort (-on #'string< #'buffer-name))
-                                 (-group-by #'buffer-modified-p)
-                                 (mapcar #'cdr)))
+           (buffer-sort-fns (or (frame-parameter nil 'buffer-sort-fns)
+                                (list (-on #'string< #'buffer-name)
+                                      (-on #'< #'buffer-modified-tick))))
+           (buffers (buffer-list))
+           (buffers (dolist (fn buffer-sort-fns buffers)
+                      (setq buffers (-sort fn buffers))))
            (separator (pcase (frame-parameter nil 'sidebar)
                         ((or 'left 'right) "\n")
                         ((or 'above 'below) "  "))))
       (erase-buffer)
-      (dolist (group grouped-buffers)
-        (cl-loop for buffer in group
-                 for string = (frame-purpose--format-buffer buffer)
-                 do (insert (propertize string
-                                        'buffer buffer)
-                            separator)))
+      (cl-loop for buffer in buffers
+               for string = (frame-purpose--format-buffer buffer)
+               do (insert (propertize string 'buffer buffer)
+                          separator))
       (goto-char saved-point))))
 
 (defun frame-purpose--sidebar-name (&optional frame)
