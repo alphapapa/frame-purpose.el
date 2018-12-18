@@ -210,6 +210,11 @@ when possible may substantially improve performance.
 sidebar buffer whenever `buffer-list-update-hook' is called.  On
 by default, but may degrade Emacs performance.
 
+`:sidebar-update-on-buffer-switch': Whether to automatically
+update the sidebar when the user selects a buffer from the
+sidebar.  Disabled by default.  If `:sidebar-auto-update' is
+non-nil, this should remain nil.
+
 Remaining keywords are transformed to non-keyword symbols and
 passed as frame parameters to `make-frame', which see."
   (unless frame-purpose-mode
@@ -383,7 +388,9 @@ when the user clicked in the sidebar."
   (interactive)
   (when-let ((buffer (get-text-property (point) 'buffer)))
     (select-window (get-mru-window nil nil 'not-selected))
-    (switch-to-buffer buffer)))
+    (switch-to-buffer buffer))
+  (when (frame-parameter nil 'sidebar-update-on-buffer-switch)
+    (frame-purpose--update-sidebar)))
 
 ;;;;; Throttle
 
@@ -428,7 +435,10 @@ will be allowed to run again."
 ;; Throttle the update-sidebar function, because sometimes it can be very slow and make Emacs loop
 ;; for a long time.  This is a hacky workaround, but it does help.
 
-(frame-purpose--throttle #'frame-purpose--update-sidebar 1)
+;; NOTE: Disabling for now, because it may not be desirable when using custom sidebar update
+;; functions.
+
+;;  (frame-purpose--throttle #'frame-purpose--update-sidebar 1)
 
 ;;;; Mode
 
