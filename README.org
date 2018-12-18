@@ -80,6 +80,12 @@ If you use [[https://github.com/jwiegley/use-package][use-package]] and [[https:
 
 Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-SPC F m= to open a new mode-specific frame.
 
+** Changelog
+
+*** 1.0
+
+First tagged version.
+
 ** Notes
 
 For one reason or another, using a sidebar with buffers in some major modes may cause problems.  For example, =elfeed-search-update= uses temporary buffers to download and process feeds, and every time it opens or closes a temp buffer, =buffer-list= is called, which updates the list of buffers in the sidebar, and this seems to significantly slow down the feed updating process.  Until a fix or workaround can be found, it's best to simply avoid using a sidebar with these major modes.  So, if =frame-purpose-show-sidebar= is called from a buffer in one of the major modes in the blacklist (or a major mode matching one of the strings in it), an error will be signaled (it's not a perfect solution, but it should help).
