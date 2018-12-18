@@ -84,7 +84,8 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 *** 1.1-pre
 
-Nothing yet.
+*Fixed*
++  ~frame-purpose-show-sidebar~: Use designated sidebar side.
 
 *** 1.0
 

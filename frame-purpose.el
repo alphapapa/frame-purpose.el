@@ -134,7 +134,7 @@ MODE defaults to the current buffer's major mode."
                             :title (symbol-name mode)))
 
 ;;;###autoload
-(cl-defun frame-purpose-show-sidebar (&optional (side 'right))
+(cl-defun frame-purpose-show-sidebar (&optional (side 'right side-set-p))
   "Show list of purpose-specific buffers on SIDE of this frame.
 When a buffer in the list is selected, the last-used window
 switches to that buffer.  Makes a new buffer if necessary.  SIDE
@@ -149,6 +149,8 @@ is a symbol, one of left, right, top, or bottom."
                                 (string (string-match mode (symbol-name major-mode))))))
     (user-error "The sidebar should generally not be used with buffers in %s.  See option `frame-purpose-sidebar-mode-blacklist'"
                 major-mode))
+  (unless side-set-p
+    (setq side (frame-parameter nil 'sidebar)))
   (frame-purpose--update-sidebar)
   (let* ((side (cl-case side
                  ;; Invert the side for `split-window'
