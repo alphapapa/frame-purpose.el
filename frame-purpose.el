@@ -165,10 +165,14 @@ is a symbol, one of left, right, top, or bottom."
                                    ;; In case the sidebar is opened in a frame without matching buffers
                                    (list 30))))
                  ((or 'nil 'below)
-                  1))))
+                  1)))
+         (horizontal (pcase-exhaustive side
+                       ((or 'above 'below) nil)
+                       ((or 'left 'right) t))))
     (split-window nil size side)
     (switch-to-buffer (frame-purpose--sidebar-name))
-    (set-window-dedicated-p (selected-window) t)))
+    (set-window-dedicated-p (selected-window) t)
+    (window-preserve-size nil horizontal t)))
 
 ;;;; Functions
 
