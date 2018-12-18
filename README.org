@@ -84,6 +84,9 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 *** 1.1-pre
 
+*Changed*
++  Use ~buffer-local-value~ instead of ~with-current-buffer~.  This significantly improves performance, as ~buffer-local-value~ benchmarks at about 55x faster than using ~with-current-buffer~ to get the value of a variable in a buffer.
+
 *Fixed*
 +  ~frame-purpose-show-sidebar~: Use designated sidebar side.
 +  Preserve sidebar window size when frame is resized.

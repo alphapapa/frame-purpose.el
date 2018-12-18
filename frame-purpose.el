@@ -212,15 +212,15 @@ passed as frame parameters to `make-frame', which see."
                       (cl-typecase filenames
                         (string (list filenames))
                         (list filenames))))
-         (pred (byte-compile (or (map-elt parameters 'buffer-predicate)
-                                 `(lambda (buffer)
-                                    (with-current-buffer buffer
-                                      (or ,(when modes
-                                             `(frame-purpose--check-mode ',modes))
-                                          ,(when filenames
-                                             `(cl-loop for filename in ',filenames
-                                                       when buffer-file-name
-                                                       thereis (string-match filename buffer-file-name))))))))))
+         (pred (byte-compile
+                (or (map-elt parameters 'buffer-predicate)
+                    `(lambda (buffer)
+                       (or ,(when modes
+                              `(frame-purpose--buffer-mode-matches-p buffer ',modes))
+                           ,(when filenames
+                              `(cl-loop for filename in ',filenames
+                                        when (buffer-local-value 'buffer-file-name buffer)
+                                        thereis (string-match filename (buffer-local-value 'buffer-file-name buffer))))))))))
     ;; Validate args
     (unless (or modes filenames (map-elt parameters 'buffer-predicate))
       (user-error "One of `:modes', `:filenames', or `:buffer-predicate' must be set"))
@@ -250,6 +250,16 @@ major mode's name with `string-match'."
            thereis (cl-typecase mode
                      (symbol (eq mode major-mode))
                      (string (string-match mode (symbol-name major-mode))))))
+
+(defsubst frame-purpose--buffer-mode-matches-p (buffer modes)
+  "Return non-nil if any of MODES match `major-mode'.
+MODES is a list of one or more symbols or strings.  Symbols are
+compared with `eq', and strings are regexps compared against the
+major mode's name with `string-match'."
+  (cl-loop for mode in modes
+           thereis (cl-typecase mode
+                     (symbol (eq mode (buffer-local-value 'major-mode buffer)))
+                     (string (string-match mode (symbol-name (buffer-local-value 'major-mode buffer)))))))
 
 (defun frame-purpose--buffer-list (&optional frame)
   "Return list of buffers.  When FRAME has a buffer-predicate, only return frames passing it."
