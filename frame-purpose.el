@@ -211,6 +211,8 @@ returns a list of buffers to be displayed in the sidebar.  If
 nil, `buffer-list' is used.  Using a custom function for this
 when possible may substantially improve performance.
 
+`:sidebar-header': Value for `header-line-format' in the sidebar.
+
 `:sidebar-auto-update': Whether to automatically update the
 sidebar buffer whenever `buffer-list-update-hook' is called.  On
 by default, but may degrade Emacs performance.
@@ -357,7 +359,8 @@ When CREATE is non-nil, create the buffer if necessary."
             (setq buffer-undo-list t
                   buffer-read-only t
                   cursor-type nil
-                  mode-line-format nil)
+                  mode-line-format nil
+                  header-line-format (frame-parameter nil 'sidebar-header))
             (use-local-map (make-sparse-keymap))
             (mapc (lambda (key)
                     (local-set-key (kbd key) #'frame-purpose--sidebar-switch-to-buffer))
