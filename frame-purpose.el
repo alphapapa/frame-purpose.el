@@ -93,8 +93,8 @@
   "Default side of sidebar window."
   :type '(choice (const right :value)
                  (const left)
-                 (const above)
-                 (const below)))
+                 (const top)
+                 (const bottom)))
 
 (defcustom frame-purpose-sidebar-mode-blacklist
   '(
@@ -152,28 +152,29 @@ is a symbol, one of left, right, top, or bottom."
   (unless side-set-p
     (setq side (frame-parameter nil 'sidebar)))
   (frame-purpose--update-sidebar)
-  (let* ((side (cl-case side
-                 ;; Invert the side for `split-window'
-                 ('left 'right)
-                 ('right 'left)
-                 ('above 'below)
-                 ('below nil)))
-         (size (pcase side
-                 ((or 'left 'right)
-                  (apply #'max (or (--map (+ 3 (length (buffer-name it)))
-                                          (buffer-list))
-                                   ;; In case the sidebar is opened in a frame without matching buffers
-                                   (list 30))))
-                 ((or 'nil 'below)
-                  1)))
+  (let* ((target-size (pcase side
+                        ((or 'left 'right)
+                         (apply #'max (or (--map (+ 4 (length (buffer-name it)))
+                                                 (funcall (frame-parameter nil 'sidebar-buffers-fn)))
+                                          ;; In case the sidebar is opened in a frame without matching buffers
+                                          (list 30))))
+                        ((or 'top 'bottom)
+                         1)))
+         (dimension-parameter (pcase side
+                                ((or 'left 'right) 'window-width)
+                                ((or 'top 'bottom) 'window-height)))
          (horizontal (pcase-exhaustive side
-                       ((or 'above 'below) nil)
+                       ((or 'top 'bottom) nil)
                        ((or 'left 'right) t))))
-    (split-window nil size side)
-    (switch-to-buffer (frame-purpose--sidebar-name))
-    (set-window-dedicated-p (selected-window) t)
-    (window-preserve-size nil horizontal t)
-    (goto-char (point-min))))
+    (with-current-buffer (frame-purpose--get-sidebar)
+      (goto-char (point-min))
+      (display-buffer-in-side-window
+       (current-buffer)
+       (list (cons 'side side)
+             (cons 'slot 0)
+             (cons 'preserve-size (cons t t))
+             (cons dimension-parameter target-size)
+             (cons 'window-parameters (list (cons 'no-delete-other-windows t))))))))
 
 ;;;; Functions
 
@@ -378,7 +379,7 @@ When CREATE is non-nil, create the buffer if necessary."
                       (setq buffers (-sort fn buffers))))
            (separator (pcase (frame-parameter nil 'sidebar)
                         ((or 'left 'right) "\n")
-                        ((or 'above 'below) "  "))))
+                        ((or 'top 'bottom) "  "))))
       (erase-buffer)
       (cl-loop for buffer in buffers
                for string = (frame-purpose--format-buffer buffer)
