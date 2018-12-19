@@ -201,6 +201,10 @@ argument, a list of buffers, and return the list sorted as
 desired.  By default, buffers are sorted by modified status and
 name.
 
+`:sidebar': When non-nil, display a sidebar on the given side
+showing buffers matching `:sidebar-buffers-fn'.  One of `top',
+`bottom', `left', or `right'.
+
 `:sidebar-buffers-fn': A function which takes no arguments and
 returns a list of buffers to be displayed in the sidebar.  If
 nil, `buffer-list' is used.  Using a custom function for this
