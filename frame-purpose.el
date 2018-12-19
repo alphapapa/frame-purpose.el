@@ -215,9 +215,31 @@ update the sidebar when the user selects a buffer from the
 sidebar.  Disabled by default.  If `:sidebar-auto-update' is
 non-nil, this should remain nil.
 
+`:require-mode': If nil, don't require `frame-purpose-mode' to be
+activated before making the frame.  By default, this option is
+non-nil.  Note that if the mode is disabled, the `buffer-list'
+function will not be overridden, so commands in the frame that
+call `buffer-list' will act on all buffers, not just ones related
+to the frame's purpose.  It may be useful to disable this
+requirement when customizing the sidebar options, because
+overriding `buffer-list' can sometimes have adverse effects on
+Emacs.
+
+In effect, you can have a \"light\" version of
+`frame-purpose-mode' by writing your own `:sidebar-buffers-fn',
+disabling `frame-purpose-mode', and updating the sidebar buffer
+manually.  For example, `frame-purpose-make-frame' returns the
+frame it creates, so that value can be used to write your own
+code to call `frame-purpose--update-sidebar' in the frame when
+appropriate (e.g. on user action, on a hook, on a network event,
+on a timer, etc).
+
 Remaining keywords are transformed to non-keyword symbols and
 passed as frame parameters to `make-frame', which see."
-  (unless frame-purpose-mode
+  (when (and (not frame-purpose-mode) (plist-get args :require-mode))
+    ;; TODO: Allow making frames when the mode is not enabled.  It can still be useful, because it
+    ;; can make a sidebar that is updated manually, and without the performance impact of overriding
+    ;; `buffer-list'.
     (user-error "Enable `frame-purpose-mode' first"))
   ;; Process args
   (let* ((parameters (cl-loop for (keyword value) on args by #'cddr
