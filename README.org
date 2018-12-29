@@ -82,6 +82,11 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 ** Changelog
 
+*** 1.2-pre
+
+*Added*
++  Add optional argument ~:sidebar-update-fn~ to function ~frame-purpose-make-frame~, allowing the sidebar update function to be overridden.
+
 *** 1.1
 
 *Added*

@@ -2,7 +2,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/frame-purpose.el
-;; Version: 1.1
+;; Version: 1.2-pre
 ;; Package-Requires: ((emacs "25.1") (dash "2.12") (dash-functional "1.2.0"))
 ;; Keywords: buffers, convenience, frames
 
@@ -151,7 +151,6 @@ is a symbol, one of left, right, top, or bottom."
                 major-mode))
   (unless side-set-p
     (setq side (frame-parameter nil 'sidebar)))
-  (frame-purpose--update-sidebar)
   (let* ((target-size (pcase side
                         ((or 'left 'right)
                          (apply #'max (or (--map (+ 4 (length (buffer-name it)))
@@ -166,7 +165,8 @@ is a symbol, one of left, right, top, or bottom."
          (horizontal (pcase-exhaustive side
                        ((or 'top 'bottom) nil)
                        ((or 'left 'right) t))))
-    (with-current-buffer (frame-purpose--get-sidebar)
+    (with-current-buffer (frame-purpose--get-sidebar 'create)
+      (funcall (frame-parameter nil 'sidebar-update-fn))
       (goto-char (point-min))
       (display-buffer-in-side-window
        (current-buffer)
@@ -210,6 +210,10 @@ showing buffers matching `:sidebar-buffers-fn'.  One of `top',
 returns a list of buffers to be displayed in the sidebar.  If
 nil, `buffer-list' is used.  Using a custom function for this
 when possible may substantially improve performance.
+
+`:sidebar-update-fn': A function which updates the sidebar
+buffer.  By default, `frame-purpose--update-sidebar'.  You may
+override this if you know what you're doing.
 
 `:sidebar-header': Value for `header-line-format' in the sidebar.
 
@@ -290,6 +294,8 @@ passed as frame parameters to `make-frame', which see."
       (funcall frame-purpose--initial-buffer-fn)
       (when (frame-parameter nil 'sidebar)
         (frame-purpose-show-sidebar (frame-parameter nil 'sidebar)))
+      (unless (frame-parameter nil 'sidebar-update-fn)
+        (set-frame-parameter nil 'sidebar-update-fn #'frame-purpose--update-sidebar))
       (selected-frame))))
 
 (defsubst frame-purpose--check-mode (modes)
@@ -342,7 +348,7 @@ is not updated.  To be added to `buffer-list-update-hook'."
            do (with-selected-frame frame
                 (when (and (frame-parameter nil 'sidebar-auto-update)
                            (frame-purpose--get-sidebar))
-                  (frame-purpose--update-sidebar)))))
+                  (funcall (frame-parameter nil 'sidebar-update-fn))))))
 
 (defun frame-purpose--get-sidebar (&optional create)
   "Return the current frame's purpose-specific, buffer-listing sidebar buffer.
@@ -420,7 +426,7 @@ when the user clicked in the sidebar."
     (select-window (get-mru-window nil nil 'not-selected))
     (switch-to-buffer buffer))
   (when (frame-parameter nil 'sidebar-update-on-buffer-switch)
-    (frame-purpose--update-sidebar)))
+    (funcall (frame-parameter nil 'sidebar-update-fn))))
 
 ;;;;; Throttle
 
