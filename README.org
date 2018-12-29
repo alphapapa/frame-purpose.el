@@ -82,7 +82,7 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 ** Changelog
 
-*** 1.1-pre
+*** 1.1
 
 *Added*
 +  Add optional argument ~:buffer-sort-fns~ to function ~frame-purpose-make-frame~, allowing a list of custom buffer sorting functions to override the default.
