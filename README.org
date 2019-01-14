@@ -87,6 +87,9 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 *Added*
 +  Add optional argument ~:sidebar-update-fn~ to function ~frame-purpose-make-frame~, allowing the sidebar update function to be overridden.
 
+*Fixed*
++  Only set cursor as invisible in non-selected windows.
+
 *** 1.1
 
 *Added*

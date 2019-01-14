@@ -364,7 +364,7 @@ When CREATE is non-nil, create the buffer if necessary."
           (with-current-buffer (get-buffer-create buffer-name)
             (setq buffer-undo-list t
                   buffer-read-only t
-                  cursor-type nil
+                  cursor-in-non-selected-windows nil
                   mode-line-format nil
                   header-line-format (frame-parameter nil 'sidebar-header))
             (use-local-map (make-sparse-keymap))
