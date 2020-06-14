@@ -75,7 +75,10 @@ If you use [[https://github.com/jwiegley/use-package][use-package]] and [[https:
   :general
   (:prefix "M-SPC"
     "Fd" #'frame-purpose-make-directory-frame
-    "Fm" #'frame-purpose-make-mode-frame))
+    "Fm" #'frame-purpose-make-mode-frame)
+  :config
+   (frame-purpose-mode 't)
+ )
 #+END_SRC
 
 Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-SPC F m= to open a new mode-specific frame.
