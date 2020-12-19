@@ -334,9 +334,9 @@ major mode's name with `string-match'."
 (defun frame-purpose--initial-buffer (&optional frame)
   "Switch to the first valid buffer in FRAME.
 FRAME defaults to the current frame."
-  (when-let ((buffer (car (funcall (frame-parameter frame 'sidebar-buffers-fn)))))
+  (when-let* ((fn (frame-parameter frame 'sidebar-buffers-fn))
+              (buffer (car (funcall fn))))
     (switch-to-buffer buffer)))
-
 
 ;;;;; Sidebar
 

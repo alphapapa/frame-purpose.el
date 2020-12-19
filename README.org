@@ -89,6 +89,7 @@ Then you could press =M-SPC F d= to open a new directory-specific frame, and =M-
 
 *Fixed*
 +  Only set cursor as invisible in non-selected windows.
++  Frames without ~:sidebar-buffers-fn~.  ([[https://github.com/alphapapa/frame-purpose.el/issues/17][#17]].  Thanks to [[https://github.com/manufactory][Manuel Wiesinger]] for reporting.)
 
 *** 1.1
 
