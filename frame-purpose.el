@@ -115,6 +115,43 @@ strings), an error will be signaled (it's not a perfect solution,
 but it should help)."
   :type '(repeat (choice symbol string)))
 
+;;;; Mode
+
+;;;###autoload
+(define-minor-mode frame-purpose-mode
+  "Toggle `frame-purpose-mode', allowing the easy creation of purpose-specific frames.
+This works by overriding `buffer-list' in frames which have their
+`buffer-predicate' parameter set.  If any unusual behavior is
+noticed in Emacs as a result of the override, disabling this mode
+should restore correct behavior."
+  :require 'frame-purpose
+  :global t
+  :init-value nil
+  (if frame-purpose-mode
+      (frame-purpose--enable)
+    (frame-purpose--disable)))
+
+(defun frame-purpose--enable ()
+  "Store original `buffer-list' definition and override it.
+Also add function to `buffer-list-update-hook'.  Called by
+command `frame-purpose-mode'.  Do not call this function manually, or
+Emacs may start behaving very strangely...."
+  (unless (fboundp 'frame-purpose--buffer-list-original)
+    ;; Avoid calling this twice, or it will define frame-purpose--buffer-list-original as itself,
+    ;; causing infinite recursion whenever Emacs calls buffer-list, which tends to cause problems
+    ;; (no, of course I didn't learn this the hard way...).
+    (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
+    (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
+    (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook)))
+
+(defun frame-purpose--disable ()
+  "Restore original `buffer-list' definition.
+Also remove function from `buffer-list-update-hook'.  Called by
+command `frame-purpose-mode'."
+  (advice-remove #'buffer-list #'frame-purpose--buffer-list)
+  (fmakunbound 'frame-purpose--buffer-list-original)
+  (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
+
 ;;;; Commands
 
 ;;;###autoload
@@ -161,10 +198,7 @@ is a symbol, one of left, right, top, or bottom."
                          1)))
          (dimension-parameter (pcase side
                                 ((or 'left 'right) 'window-width)
-                                ((or 'top 'bottom) 'window-height)))
-         (horizontal (pcase-exhaustive side
-                       ((or 'top 'bottom) nil)
-                       ((or 'left 'right) t))))
+                                ((or 'top 'bottom) 'window-height))))
     (with-current-buffer (frame-purpose--get-sidebar 'create)
       (funcall (frame-parameter nil 'sidebar-update-fn))
       (goto-char (point-min))
@@ -309,7 +343,7 @@ major mode's name with `string-match'."
                      (string (string-match mode (symbol-name major-mode))))))
 
 (defsubst frame-purpose--buffer-mode-matches-p (buffer modes)
-  "Return non-nil if any of MODES match `major-mode'.
+  "Return non-nil if any of BUFFER's MODES match `major-mode'.
 MODES is a list of one or more symbols or strings.  Symbols are
 compared with `eq', and strings are regexps compared against the
 major mode's name with `string-match'."
@@ -475,43 +509,6 @@ will be allowed to run again."
 ;; functions.
 
 ;;  (frame-purpose--throttle #'frame-purpose--update-sidebar 1)
-
-;;;; Mode
-
-;;;###autoload
-(define-minor-mode frame-purpose-mode
-  "Toggle `frame-purpose-mode', allowing the easy creation of purpose-specific frames.
-This works by overriding `buffer-list' in frames which have their
-`buffer-predicate' parameter set.  If any unusual behavior is
-noticed in Emacs as a result of the override, disabling this mode
-should restore correct behavior."
-  :require 'frame-purpose
-  :global t
-  :init-value nil
-  (if frame-purpose-mode
-      (frame-purpose--enable)
-    (frame-purpose--disable)))
-
-(defun frame-purpose--enable ()
-  "Store original `buffer-list' definition and override it.
-Also add function to `buffer-list-update-hook'.  Called by
-command `frame-purpose-mode'.  Do not call this function manually, or
-Emacs may start behaving very strangely...."
-  (unless (fboundp 'frame-purpose--buffer-list-original)
-    ;; Avoid calling this twice, or it will define frame-purpose--buffer-list-original as itself,
-    ;; causing infinite recursion whenever Emacs calls buffer-list, which tends to cause problems
-    ;; (no, of course I didn't learn this the hard way...).
-    (fset 'frame-purpose--buffer-list-original (symbol-function #'buffer-list))
-    (advice-add #'buffer-list :override #'frame-purpose--buffer-list)
-    (add-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook)))
-
-(defun frame-purpose--disable ()
-  "Restore original `buffer-list' definition.
-Also remove function from `buffer-list-update-hook'.  Called by
-command `frame-purpose-mode'."
-  (advice-remove #'buffer-list #'frame-purpose--buffer-list)
-  (fmakunbound 'frame-purpose--buffer-list-original)
-  (remove-hook 'buffer-list-update-hook #'frame-purpose--buffer-list-update-hook))
 
 ;;;; Footer
 
